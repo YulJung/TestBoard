@@ -1,0 +1,575 @@
+- 선생님이 보내주신  페이징 코드
+    - 컨트롤러
+
+```java
+@RequestMapping(value="paging", method=RequestMethod.GET)
+	public String paging(@RequestParam(value="page", required=false, defaultValue="1")int page, Model model) {
+		PageDTO paging = bs.paging(page);
+		List<BoardDTO> boardList = bs.pagingList(page);
+		model.addAttribute("boardList", boardList);
+		model.addAttribute("paging", paging);
+		return "board/findAll";
+	}
+```
+
+- 서비스 클래스
+- 
+
+```java
+private static final int PAGE_LIMIT = 3; // 한페이지에 보여질 글 개수 
+	private static final int BLOCK_LIMIT = 3; // 한화면에 보여질 페이지 개수
+
+	@Override
+	public List<BoardDTO> pagingList(int page) {
+		// TODO Auto-generated method stub
+		int pagingStart = (page-1) * PAGE_LIMIT;
+		Map<String, Integer> pagingParam = new HashMap<String, Integer>();
+		pagingParam.put("start", pagingStart);
+		pagingParam.put("limit", PAGE_LIMIT);
+//		List<BoardDTO> pagingList = br.pagingList(pagingStart);
+		List<BoardDTO> pagingList = br.pagingList1(pagingParam);
+		for(BoardDTO b: pagingList) {
+			System.out.println(b.toString());
+		}
+		return pagingList;
+	}
+
+	@Override
+	public PageDTO paging(int page) {
+		int boardCount = br.boardCount();
+		int maxPage = (int)(Math.ceil((double)boardCount / PAGE_LIMIT));
+		int startPage = (((int)(Math.ceil((double)page / BLOCK_LIMIT))) - 1) * BLOCK_LIMIT + 1;
+		int endPage = startPage + BLOCK_LIMIT - 1;
+		if(endPage > maxPage)
+			endPage = maxPage; 
+		PageDTO paging = new PageDTO();
+		paging.setPage(page);
+		paging.setStartPage(startPage);
+		paging.setEndPage(endPage);
+		paging.setMaxPage(maxPage);
+		
+		System.out.println("paging.toString(): "+ paging.toString());
+		
+		return paging;
+	}
+```
+
+- 레파지토리
+
+```java
+public int boardCount() {
+		return sql.selectOne("Board.count");
+	}
+	
+	public List<BoardDTO> pagingList(int pagingStart) {
+		return sql.selectList("Board.pagingList", pagingStart);
+	}
+
+	public List<BoardDTO> pagingList1(Map<String, Integer> pagingParam) {
+		return sql.selectList("Board.pagingList1", pagingParam);
+	}
+```
+
+- 매퍼
+- 
+
+```java
+<select id="pagingList" parameterType="int" resultType="board">
+		select * from board_table order by b_number desc limit #{pagingStart}, 3
+	</select>
+	
+	<select id="pagingList1" parameterType="java.util.HashMap" resultType="board">
+		select * from board_table order by b_number desc limit #{start}, #{limit}
+	</select>
+	
+	<select id="count" resultType="int">
+		select count(b_number) from board_table
+	</select>
+```
+
+- 목록jsp (jstl 꼭 있어야함! 맨 윗줄에 있는지 확인하기)
+- 
+
+```java
+<div>
+		<c:choose>
+			<c:when test="${paging.page<=1}">
+				[이전]&nbsp;
+			</c:when>
+			<c:otherwise>
+			<!-- 현재 페이지에서 1감소한 페이지 요청하는 링크 -->
+				<a href="paging?page=${paging.page-1}">[이전]</a>&nbsp;
+			</c:otherwise>
+		</c:choose>
+		
+		<c:forEach begin="${paging.startPage}" end="${paging.endPage}" var="i" step="1">
+			<c:choose>
+				<c:when test="${i eq paging.page}">
+					${i}
+				</c:when>
+				<c:otherwise>
+					<a href="paging?page=${i}">${i}</a>
+				</c:otherwise>
+			</c:choose>
+		</c:forEach>
+	
+		<c:choose>
+			<c:when test="${paging.page>=paging.maxPage}">
+				[다음]
+			</c:when>
+			<c:otherwise>
+				<a href="paging?page=${paging.page+1}">[다음]</a>
+			</c:otherwise>
+		</c:choose>
+	</div>
+```
+
+[페이징 처리 (mysql)]
+  
+
+[페이징처리(postman 또는 host주소로 테스트/처리과정)](https://www.notion.so/postman-host-6ad6e020697d471aa9b080ca94ebeef0)
+
+[페이징처리(하단링크 테스트) ](https://www.notion.so/99df213e8a60489b85fab0310a9c2edc)
+
+[update (+ 페이징처리 추가해서)](https://www.notion.so/update-96094ab5da154306a6c3f1bd63ed1bc4)
+
+[검색기능(search)](https://www.notion.so/search-aa55f8043b054c62a1d2343a4f195a12)
+
+-----
+
+membercontroller
+
+package com.icia.member.controller;
+
+import java.lang.reflect.Member;
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.ibatis.javassist.compiler.MemberCodeGen;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.icia.member.dto.MemberDTO;
+import com.icia.member.service.MemberService;
+
+@Controller
+public class HomeController {
+	
+	@Autowired
+	private MemberService ms;
+	
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index() {
+		return "index";
+	}
+	
+	// 회원가입 페이지 출력 (value값 save로 바꾸기!. )
+	@RequestMapping(value="/insertform", method=RequestMethod.GET)
+	public String insertform() {
+		return "insert";
+		
+	}
+
+
+	/*
+	 * 매개변수: memberDTO
+	 * 리턴타입: memberDTO
+	 * 메서드 : insert
+	 * 
+	 */
+	
+	
+	// 회원가입 처리(insert-> save로 바꾸기)
+	 @RequestMapping(value="/insert", method=RequestMethod.POST)
+	 public String insert(@ModelAttribute MemberDTO member) {
+	  ms.insert(member); return "index";
+	 
+	  }
+
+	 
+	 // 전체회원목록
+	 /* 매개변수 : List<MemberDTO>
+	  * 리턴타입 : 리스트
+	  * 메서드 : findAll
+	  */
+	 
+	 @RequestMapping(value="/findAll", method=RequestMethod.GET)
+	 public String FindAll(Model model) {
+		 
+		 List<MemberDTO> memberList = ms.findAll();
+		 model.addAttribute("memberList", memberList);
+		 
+		 return "findAll";
+		 
+		 
+		 
+	 }
+	
+	 
+	 // 로그인(index에서 받아오기)
+	 // 로그인 페이지 출력
+	 
+	 @RequestMapping(value="/login", method=RequestMethod.GET)
+	 public String loginform(){
+		 
+		 return "login";
+		 
+	 }
+	 
+	 
+	 //로그인처리
+	 //RequestParam으로 id, password 받아와도 되고, ModelAttribute로 dto 받아와도 됨
+	 @RequestMapping(value="/login", method=RequestMethod.POST)
+	 public String loginCheck(@ModelAttribute MemberDTO member, Model model)  {
+		 String resultPage= ms.loginCheck(member);
+		 return resultPage;
+		 // service에서 처리했던 return "main" , return "login"부분을 나타내는 String resultPage
+		 
+		 
+		 
+		 //		 String result = ms.loginCheck(member);
+//		 model.addAttribute("m_id", member.getM_id());
+//		 if(result==1) {
+//			 return "main";
+//		 } else {
+//			 return "login";
+//		 }
+	
+		
+	 }
+	 
+	 // 로그아웃처리
+	 @RequestMapping(value="/logout", method=RequestMethod.GET)
+	 public String logout(HttpSession session) {
+		 // 세션에 저장된 데이터를 지움.
+		 session.invalidate();
+		 return "index";
+	 }
+	 
+	 //회원상세조회(findById)
+	
+	 @RequestMapping(value="/detail", method=RequestMethod.GET)
+	 public String findById(@RequestParam("m_number") long m_number, Model model) {
+		 MemberDTO member = ms.findById(m_number);
+		 model.addAttribute("member", member);
+		 return "detail";
+	 }
+
+	 
+	 //회원삭제
+	 @RequestMapping(value="/delete", method=RequestMethod.GET)
+	 public String delete(@ModelAttribute MemberDTO member,@RequestParam("m_number") long m_number) {
+		
+		 ms.delete(m_number);
+		 
+		 
+		 
+		 return "redirect:/findAll";
+	 }
+	 
+	 // 회원정보수정 
+	 @RequestMapping(value="/update", method=RequestMethod.GET)
+	 public String updateForm(@RequestParam("m_number") long m_number, Model model) {
+		 MemberDTO member = ms.findById(m_number);
+		 model.addAttribute("member", member);
+		 return "update";
+	 }
+	 
+	 @RequestMapping(value="/update", method=RequestMethod.POST)
+	 public String update(@ModelAttribute MemberDTO member, Model model) {
+		 ms.update(member);
+		 // DB에서 데이터를 가지고 와서 detail.jsp로 
+//		member = ms.findById(member.getM_number());
+//		model.addAttribute("member", member);
+//		return "redirect:/detail"; 
+		 
+		 // 컨트롤러의 detail 주소 요청
+		 return "redirect:/detail?m_number="+member.getM_number();
+		 // redirect 해서 가져온 정보에는 m_number가 없으므로 가져온 정보에 
+		 // + 해서 member.getM_number()를 해줌?
+		 
+	 }
+	 
+	 //아이디 중복체크
+	 @RequestMapping(value="/idDuplicate", method=RequestMethod.POST)
+	 public @ResponseBody String idDuplicate(@RequestParam("m_id") String m_id) {
+		 System.out.println("MemberController.idDuplicate() : " + m_id);
+		 
+		 String result = ms.idDuplicate(m_id);
+		 return result; //"ok" or "no"
+	 }
+	 
+	 
+	 // ajax로 상세조회
+	 @RequestMapping(value="/detailAjax", method=RequestMethod.POST)
+	 public @ResponseBody MemberDTO detailAjax(@RequestParam("m_number") long m_number) {
+		 MemberDTO member = ms.findById(m_number); // 조회할떄는 findById메서드
+		 return member;
+	 }
+	 
+}
+
+----
+
+insert.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<style>
+	input{
+	display : block;
+	width: 20%;
+	}
+	
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script> <!-- jquery cdn주소 -->
+<script>
+	/* 아이디 입력을 하는 동안에 idDuplicate() 함수를 호출하고 입력된 갑슬 콘솔에 출력*/
+	function idDuplicate(){
+		const id = document.getEelementById(m_id).value;
+		console.log(id);
+		const checkResult = document.getElementById('id-dup-check');
+		$.ajax({
+			type: 'post', // 전송방식(get, post, delete, put 등)
+			url: 'idDuplicate', //요청주소 (컨트롤러로 요청하는 주소 )
+			data: {'m_id': id}, // 전송할 데이터, 자바스크립트 객체표현법
+			dataType: 'text', //요청 후 리턴받을 때의 데이터 형식
+			success: function(result){ // 요청이 성공적으로 처리됐을 때 실행할 함수
+				console.log('ajax 성공');
+				console.log(result);
+			}, 
+			error: function(){ // 요청이 실패했을 때 실행할 함수 
+				console.log('오타 찾으세요');
+				
+			}
+		})
+	}
+
+</script>
+</head>
+<body>
+	<form action="insert" method="post" name="insert_form">
+	1. 아이디 : <input type="text" name="m_id" placeholder="아이디를 입력하세요" onblur="idDuplicate()" id="m_id" >
+	<span id="id-dup-check"></span>
+	2. 비밀번호 : <input type="password" name="m_password" placeholder="비밀번호를 입력하세요">
+	3. 이름 : <input type="text" name="m_name">
+	4. 이메일 : <input type="text" name="m_email">@<input type="text" name="domain" id="domain">
+	<select id="domainSelect">
+	<option disabled>선택하세요</option>
+	<option value="naver.com">naver.com</option>
+	<option value="daum.net">daum.net</option>
+	<option value="google.com">google.com</option>
+	</select><br>
+	5. 전화번호 : <input type="text" name="m_phone" >
+	
+	<input type="submit" value="회원가입">
+	</form>
+</body>
+</html>
+
+
+---------------------------------
+
+findall
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>  <!--JSTL  -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script> 
+<script>
+
+
+	function detailAjax(m_number){
+		console.log(m_number);
+		$.ajax({
+			type: 'post',
+			url: 'detailAjax',
+			data: {'m_number': m_number},
+			dataType: 'json',
+			success: function(result){
+				console.log(result);
+			},
+			error: function(){
+				console.log('오타 찾으세요');
+			}
+		});
+		
+		
+		
+		
+		
+	}
+/* 				let output = "<table class='table'>";
+				output += "<tr><th>number</th> <th>id</th> <th>password</th> <th>name</th>";
+				output += "<th>email</th> <th>phone</th> </tr>";
+				output += "<tr>";
+				output += "<td>"+result.m_number+"</td>";
+				output += "<td>"+result.m_id+"</td>";
+				output += "<td>"+result.m_password+"</td>";
+				output += "<td>"+result.m_name+"</td>";
+				output += "<td>"+result.m_email+"</td>";
+				output += "<td>"+result.m_phone+"</td>";
+				output += "</tr>";
+				output += "</table>";
+				
+				view.innerHTML = output;
+				
+				나중에 붙여넣기.*/
+
+
+</script>
+
+
+</head>
+<body>
+<!-- tr : 새로운 행을 추가할 때 
+        td : 새로운 열을 추가할 때 
+        th : 열 제목
+        thead(제목부분), tbody(내용부분)-  -->
+	<h2>회원전체목록</h2>
+	<table class="table">
+		<tr> 
+			<th>회원번호</th>
+			<th>아이디</th>
+			<th>비밀번호</th>
+			<th>이름</th>
+			<th>이메일</th>
+			<th>전화번호</th>
+			<th>상세조회</th>
+			<th>상세조회(ajax)</th>
+			<th>삭제</th>
+			<th>수정</th>
+		</tr>
+		<c:forEach items="${memberList}" var="member"> <!-- var: 반복변수, tList: 홈컨트롤러에서 "tList"  -->
+		<tr>
+			<td>${member.m_number}</td>
+			<td>${member.m_id}</td>
+			<td>${member.m_password}</td>
+			<td>${member.m_name}</td>
+			<td>${member.m_email}</td>
+			<td>${member.m_phone}</td>
+	<!-- detail이라는 주소로 t_number 파라미터를 전달함
+		링크로 서버에 데이터 전송 
+		서버에서 t_number를 받아서 sysout으로 출력해보세요  -->
+		
+		<!--detail이라는 주소요청을 통해 회원상세조회를 해봅시다. 상세조회 데이터는 detail.jsp에 출력합니다. -->
+			<td><a href="detail?m_number=${member.m_number}">조회</a></td>
+			<td><button onclick="detailAjax('${member.m_number}')">조회(ajax)</button> <!--detailAjax함수를 호출할 때 pk값을 매개변수로 전달  -->
+			
+			<td><a href="delete?m_number=${member.m_number}">삭제</a></td>
+			<!-- 1. 수정화면 요청 
+					수정화면을 요청하면 DB로부터 해당 회원의 정보를 가져와서 update.jsp에 출력함(form태그 사용)
+				2. ㅅ정처리 
+					이메일, 전화번호만 수정할 수 있음
+					update.jsp에 입력한 내용을 서버로 전달하여 수정을 처리하고 해당 회원의 detail 페이지를 출력할것-->
+			
+			<td><a href="update?m_number=${member.m_number}">수정</a></td>
+		</tr>
+		</c:forEach>
+		</table>
+		
+</body>
+</html>
+
+update.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script>
+/* 비밀번호 입력창에서 비밀번호를 입력받고 DB에서 가져온 비밀번호와 비교해서 일치하면 update처리, 
+ * 
+ *일치하지 않으면 비밀번호가 일치하지 않습니다 alert 출력*/
+ function update(){
+	console.log('update 함수호출')
+	
+	const pw=document.getElementById('m_password').value;
+	console.log(pw);
+	
+	const pwDB=${member.m_password};
+	// $ 태그는 한 jsp 파일에서 어디서든 사용 가능
+	// 반복문 돌릴떄는 다름. 함수호출할 때 매개변수 넘기는 방식으로 할 수 이씅ㅁ
+	console.log(pwDB);
+	
+	if(pw==pwDB){
+		// 이 문장이 아래 form을 전송하는 문장.
+		update_form.submit();
+	} else {
+		alert('비밀번호가 틀립니다.');
+	}
+}
+</script>
+	</head>
+<body>
+	<form action="update" method="post" name="update_form">
+	<input type="hidden" name="m_number" value="${member.m_number}">
+	아이디 : <input type="text" name="m_id" value="${member.m_id}" readonly>
+	비밀번호 : <input type="password" name="m_password" id="m_password">
+	이름 : <input type="text" name="m_name" value="${member.m_name}" readonly>
+	이메일 : <input type="text" name="m_email" value="${member.m_email}">
+	전화번호 : <input type="text" name="m_phone" value="${member.m_phone}">
+	<input type="button" value="수정" onclick="update()">
+	</form>
+</body>
+</html>
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>  <!--JSTL  -->
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script>
+	function logout(){
+		location.href="logout";
+	}
+
+
+</script>
+
+
+</head>
+<body>
+	<h2> main.jsp</h2>
+	세션에 저장한 데이터 출력 : ${sessionScope.loginId}
+	<!-- 로그아웃 버튼을 클릭하면 logout이라는 주소 요청 -->
+	<button onclick="logout()">로그아웃</button><br>
+	
+	<!-- 아래링크를 클릭하면 전체회원목록을 조회하여 findAll.jsp에 출력 -->
+	<!-- 아이디가 admin인 관리자가 로그인 했을때만 목록 링크가 보이도록 -->
+	<!--  목록을 조회하려면 JSTL 사용해야함 -->  -->
+	<!-- test="" 여기에 쓰는건 조건식 // eq = equals -->
+	<c:if test="${sessionScope.loginId eq 'admin'}">
+	<a href="findAll">회원목록(관리자만보여요)</a><br>
+	
+	</c:if>
+
+	<a href="findAll">회원목록</a>
+</body>
+</html>
