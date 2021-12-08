@@ -20,13 +20,42 @@
 	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
 	integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
 	crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.js"></script> <!-- jquery cdn주소 -->
+<script>
+	/* 아이디 입력을 하는 동안에 idDuplicate() 함수를 호출하고 입력된 갑슬 콘솔에 출력*/
+	function idDuplicate(){
+		const id = document.getElementById('m_id').value;
+		console.log(id);
+		const checkResult = document.getElementById('id-dup-check');
+		$.ajax({
+			type: 'post', // 전송방식(get, post, delete, put 등)
+			url: 'idDuplicate', //요청주소 (컨트롤러로 요청하는 주소 )
+			data: {'m_id': id}, // 전송할 데이터, 자바스크립트 객체표현법
+			dataType: 'text', //요청 후 리턴받을 때의 데이터 형식
+			success: function(result){ // 요청이 성공적으로 처리됐을 때 실행할 함수
+				console.log('ajax 성공');
+				console.log(result);
+
+				checkResult.innerHTML='사용할수 있는 아이디입니다.';
+
+				
+			}, 
+			error: function(){ // 요청이 실패했을 때 실행할 함수 
+				console.log('오타 찾으세요');
+				
+			}
+		})
+	}
+
+</script>
 </head>
 <body>
 	<form method="post" align="center" action="doInsert" enctype="multpart/form-data">
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">ID</label> <input type="text"
-				class="form-control" name="m_id" placeholder="아이디를 입력해주세요"
-				style="width: 300px; height: 50px;">
+				class="form-control" name="m_id" placeholder="아이디를 입력해주세요" onblur="idDuplicate()" id="m_id"
+				style="width: 300px; height: 50px;"><br>
+					<span id="id-dup-check"></span>
 		</div>
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">PASSWORD</label> <input
@@ -65,7 +94,7 @@
 		<div>
 			<button type="submit" class="btn btn-primary">회원가입</button>
 			&nbsp;&nbsp;
-			<button type="button" class="btn btn-danger" onclick="window.close()">취소</button>
+			<button type="button" class="btn btn-danger" onclick="location.href='../'">취소</button>
 		</div>
 
 	</form>

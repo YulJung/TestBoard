@@ -22,23 +22,28 @@
 	crossorigin="anonymous"></script>
 </head>
 <body>
-	<form method="post" align="center" action="doUpdate">
+	<form method="post" align="center" action="doUpdateBoard">
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">작성자</label> <input type="text"
-				class="form-control" name="b_writer" value="${board.b_writer }"
+				class="form-control" name="b_writer" value="${board.b_writer }" readonly="readonly"
 				style="width: 300px; height: 50px;">
 		</div>
-	
+		
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">제목</label> <input
 				type="text" class="form-control" name="b_title"
 				 value="${board.b_title }" style="width: 300px; height: 50px;">
 		</div>
-
+		<input type="hidden" value="${board.b_number }" name="b_number">
 	
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">글내용</label> 
 			<textarea rows="30" cols="10" class="form-control" name="b_contents" >${board.b_contents }</textarea>
+		</div>
+		<div class="form-group" align="center">
+			<label for="exampleFormControlInput1">첨부파일</label> <input
+				type="file" class="form-control" name="b_file"
+				 value="${board.b_file }" style="width: 300px; height: 50px;">
 		</div>
 		<div>
 			<button type="submit" class="btn btn-primary">글 수정</button>

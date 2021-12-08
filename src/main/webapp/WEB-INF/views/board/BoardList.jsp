@@ -13,6 +13,19 @@
 
 </head>
 <body>
+<header>
+	
+	<div>
+		${sessionScope.loginId} 님 환영합니다. 
+		</div>	
+		<div align="right">
+		<a href="mypage">마이 페이지</a>
+		<a href="logout" >로그아웃</a>
+		
+		</div>
+
+
+</header>
 <table  class="table table-hover">
 <tr> 
 	<th>글번호</th>
@@ -25,7 +38,7 @@
 			<tr>
 				<td>${b.b_number }</td>
 				<td>${b.b_writer }</td>
-				<td><a href="/board/detail?b_number=${b.b_number }">${b.b_title }</a></td>
+				<td><a href="boardDetail?b_number=${b.b_number }">${b.b_title }</a></td>
 				<td>${b.b_hits }</td>
 				<td>${b.b_date }</td>				
 			</tr>
@@ -38,7 +51,11 @@
 
 	</c:forEach>
 	</table>
-<div>
+	<div align="right">
+	<button class="btn btn-outline-primary" onclick="location.href='save?m_id=${sessionScope.loginId}'"> 글쓰기</button>
+	
+	</div>
+<div align="center">
 		<c:choose>
 			<c:when test="${paging.page<=1}">
 				[이전]&nbsp;

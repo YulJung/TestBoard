@@ -22,16 +22,11 @@
 	crossorigin="anonymous"></script>
 </head>
 <body>
-	<form method="post" align="center" action="/board/save">
+	<form method="post" align="center" action="save" enctype="multpart/form-data">
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">ID</label> <input type="text"
-				class="form-control" name="b_writer" placeholder="작성자를 입력해주세요"
-				style="width: 300px; height: 50px;">
-		</div>
-		<div class="form-group" align="center">
-			<label for="exampleFormControlInput1">PASSWORD</label> <input
-				type="password" class="form-control" name="b_password"
-				placeholder="비밀번호를 입력해주세요" style="width: 300px; height: 50px;">
+				class="form-control" name="b_writer" value="${m }"
+				style="width: 300px; height: 50px;" readonly="readonly">
 		</div>
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">TITLE</label> <input
@@ -43,17 +38,18 @@
 			<label for="exampleFormControlInput1">글내용</label> 
 			<textarea rows="30" cols="10" class="form-control" name="b_contents"></textarea>
 		</div>
+		<div class="form-group" align="center">
+			<label for="exampleFormControlInput1">첨부파일</label> <input
+				type="file" class="form-control" name="b_file"
+				placeholder="첨부파일을 선택해주세요" style="width: 300px; height: 50px;">
+		</div>
+			
 		<div>
 			<button type="submit" class="btn btn-primary">글 작성</button>
 			&nbsp;&nbsp;
-			<button type="button" class="btn btn-danger" onclick="window.close()">취소</button>
+			<button type="button" class="btn btn-danger" onclick="location.href='./'">취소</button>
 		</div>
 
-	</form>
-	<form action="/board/savefile" method="post" enctype="multipart/form-data">
-	
-	file <input type="file" name="b_file">
-	<button type="submit">제출</button>
 	</form>
 </body>
 </html>

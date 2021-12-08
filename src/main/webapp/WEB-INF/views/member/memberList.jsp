@@ -52,11 +52,11 @@
 	<th>이름</th>
 	<th>이메일</th>
 	<th>전화번호</th>
-	<th>상세조회</th>
+	
 	<th>삭제</th>
-	<th>수정</th>
+	
  </tr>
-	<c:forEach items="${memberList }" var="m">
+	<c:forEach items="${member }" var="m">
 
 
 		
@@ -70,10 +70,10 @@
 				<td>${m.m_email }</td>
 				<td>${m.m_phone }</td>
 				
-				<td><a href="detail?m_id=${m.m_id }">조회</a></td>
-				<td><button onclick="detailAjax(${m_number})">ajax</button></td>
+		
+		
 				<td><a href="delete?m_id=${m.m_id }">삭제</a></td>
-				<td><a href="update?m_id=${m.m_id }">수정</a></td>
+		
 			</tr>
 		
 

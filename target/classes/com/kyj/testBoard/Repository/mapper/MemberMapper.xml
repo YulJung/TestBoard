@@ -11,4 +11,16 @@
 		resultType="member">
 		select * from member where m_id = #{m_id}
 	</select>
+	<select id="idDuplicate" parameterType="String" resultType="String">
+	select m_id from member where m_id=#{m_id}
+</select>
+	<select id="getall" resultType="member">
+		select * from member
+	</select>
+	<delete id="delete" parameterType="String">
+	delete from member where m_id = #{m_id}
+	</delete>
+	<select id="selectOne" parameterType="String" resultType="member">
+	select * from member where m_id = #{m_id}
+	</select>
 </mapper>
