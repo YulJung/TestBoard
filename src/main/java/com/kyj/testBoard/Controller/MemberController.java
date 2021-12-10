@@ -1,5 +1,6 @@
 package com.kyj.testBoard.Controller;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import javax.servlet.http.HttpSession;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.kyj.testBoard.DTO.MemberDTO;
+
 import com.kyj.testBoard.Service.MemberServiceInterface;
 
 @Controller
@@ -27,11 +30,9 @@ public class MemberController {
 	public String memberInsert() {
 		return "/member/memberInsert";
 	}
+
 	@RequestMapping(value="doInsert",method = RequestMethod.POST)
-	public String doInsert(@ModelAttribute MemberDTO member, Model model) {
-		LocalDateTime now = LocalDateTime.now();
-		
-		member.setM_profile(now+"_"+member.getM_profile());
+	public String doInsert(@ModelAttribute MemberDTO member, Model model) throws IllegalStateException, IOException {
 		int i = ms.insert(member);
 		if(i==1) { 
 			 model.addAttribute("msg","회원가입을 진심으로 환영합니다.");
@@ -60,12 +61,35 @@ public class MemberController {
 		 
 		 return "redirect:admin";
 	 }
-	 @RequestMapping(value = "updateMember")
-	 public String updateMember(HttpSession session,Model model) {
+	 @RequestMapping(value = "updateMember",method = RequestMethod.POST)
+	 public String updateMember(HttpSession session,Model model,@ModelAttribute MemberDTO member) {
 		 String m_id = (String) session.getAttribute("loginId");
-		 System.out.println(m_id);
-		 MemberDTO myInfo = ms.select(m_id);
+		 MemberDTO myInfo = ms.select(m_id);		
+		 if(myInfo.getM_password().equals(member.getM_password())) {
 		 model.addAttribute("member", myInfo);
 		 return "member/memberDetail";
+		 }else {
+			 model.addAttribute("msg","비밀번호가 일치하지 않습니다..");
+			   model.addAttribute("url","/testBoard/mypage");
+			   return "/member/redirect";
+		 }
+		 
+	 }
+	 
+	 @RequestMapping(value = "doUpdateMember",method=RequestMethod.POST)
+	 public String doUpdate(@ModelAttribute MemberDTO member, Model model) throws IllegalStateException, IOException {
+		 System.out.println(member);
+		int i = ms.update(member);
+		 
+		 if(i==1) { 
+			 model.addAttribute("msg","회원정보가 수정되었습니다.");
+	            model.addAttribute("url","/testBoard/mypage");
+		}else {
+			  model.addAttribute("msg","회원정보 수정에 실패하였습니다.");
+			   model.addAttribute("url","/testBoard/mypage");
+		}
+		
+		return "/member/redirect";
 	 }
 }
+	

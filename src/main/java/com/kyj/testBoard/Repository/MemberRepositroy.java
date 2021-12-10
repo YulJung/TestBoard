@@ -44,6 +44,22 @@ public class MemberRepositroy {
 		return sql.selectOne("member.selectOne", m_id);
 	}
 
+	public int update(MemberDTO member) {
+		// TODO Auto-generated method stub
+		int result =0;
+		try {
+		System.out.println(member);
+		 result = sql.update("member.update", member);
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+
+	
+
 	
 
 }

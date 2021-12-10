@@ -7,6 +7,7 @@
 	<typeAlias alias="board" type="com.kyj.testBoard.DTO.BoardDTO"/>
 	<typeAlias alias="member" type="com.kyj.testBoard.DTO.MemberDTO"/>
 	<typeAlias alias="comment" type="com.kyj.testBoard.DTO.CommentDTO"/>
+	
 	</typeAliases>
 	 
 </configuration>

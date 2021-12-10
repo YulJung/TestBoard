@@ -1,6 +1,7 @@
 package com.kyj.testBoard.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,4 +53,25 @@ public class BoardRepository {
 		return sql.delete("board.delete", b_number);
 	}
 
+	public int boardCount() {
+		// TODO Auto-generated method stub
+		return sql.selectOne("board.count");
+	}
+
+	public List<BoardDTO> pagingList(int pagingStart) {
+		return sql.selectList("board.pagingList", pagingStart);
+	}
+
+	public List<BoardDTO> pagingList1(Map<String, Integer> pagingParam) {
+		return sql.selectList("board.pagingList1", pagingParam);
+	}
+
+	public List<BoardDTO> search(Map<String, String> searchParam) {
+		// TODO Auto-generated method stub
+		return sql.selectList("board.search", searchParam);
+	}
+
+
+
+	
 }

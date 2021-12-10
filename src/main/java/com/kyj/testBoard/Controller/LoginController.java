@@ -35,7 +35,7 @@ public class LoginController {
 	@RequestMapping(value = "doLogin")
 	public String doLogin(@ModelAttribute MemberDTO member,Model model,HttpServletRequest request) {
 	
-		return ms.login(member,model,request);
+		return ms.login(member,model,request, 1);
 	}
 	@RequestMapping(value = "logout")
 	public String doLogout(HttpSession session,Model model) {

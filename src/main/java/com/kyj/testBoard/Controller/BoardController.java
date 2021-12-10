@@ -1,6 +1,6 @@
 package com.kyj.testBoard.Controller;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.kyj.testBoard.DTO.BoardDTO;
+import com.kyj.testBoard.DTO.CommentDTO;
+import com.kyj.testBoard.DTO.PageDTO;
 import com.kyj.testBoard.Service.BoardServiceInterface;
+import com.kyj.testBoard.Service.CommentService;
 
 
 @Controller
@@ -22,7 +25,20 @@ import com.kyj.testBoard.Service.BoardServiceInterface;
 public class BoardController {
 	@Autowired
 	private BoardServiceInterface bs;
+	@Autowired
+	private CommentService cs;
+	
+	@RequestMapping(value="detail",method=RequestMethod.GET)
+	public String detail(@RequestParam("b_number") long b_number, Model model, @RequestParam(value="page", required=false, defaultValue="1")int page) {
+		BoardDTO board = bs.selectOne(b_number);
+		model.addAttribute("board",board);
+		model.addAttribute("page", page);
 
+		List<CommentDTO> commentList = cs.findAll(b_number);
+		model.addAttribute("commentList",commentList);
+		// 상세조회를 할 때 댓글 목록도 같이 가져가게 해주는 코드.
+		return "board/BoardDetail";
+	}
 	// 글 목록 페이지 조회
 	@RequestMapping(value = "findall")
 	public String boardList(Model model) {
@@ -41,9 +57,8 @@ public class BoardController {
 
 	// 글쓰기
 	@RequestMapping(value = "save", method = RequestMethod.POST)
-	public String doInsert(@ModelAttribute BoardDTO board,Model model) {
-		LocalDateTime now = LocalDateTime.now();
-		board.setB_file(now+"_"+board.getB_file());
+	public String doInsert(@ModelAttribute BoardDTO board,Model model) throws IllegalStateException, IOException {
+	
 		bs.save(board);
 		
 			
@@ -108,5 +123,21 @@ System.out.println("update con");
 			return "fail";
 		}
 	}
-
+	@RequestMapping(value="paging", method=RequestMethod.GET)
+	public String paging(@RequestParam(value="page", required=false, defaultValue="1")int page, Model model) {
+		System.out.println("page test"+page);
+		PageDTO paging = bs.paging(page);
+		List<BoardDTO> boardList = bs.pagingList(page);
+		model.addAttribute("bList", boardList);
+		model.addAttribute("paging", paging);
+		return "/board/BoardList";
+	}
+	@RequestMapping(value="search", method=RequestMethod.GET)
+	public String search(@RequestParam("searchtype") String searchtype, @RequestParam("keyword") String keyword, Model model) {
+		List<BoardDTO> bList = bs.search(searchtype, keyword);
+		model.addAttribute("bList", bList);
+		return "/board/BoardList";
+	}
+	
+	
 }

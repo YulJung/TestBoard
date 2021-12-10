@@ -53,7 +53,17 @@
 	</table>
 	<div align="right">
 	<button class="btn btn-outline-primary" onclick="location.href='save?m_id=${sessionScope.loginId}'"> 글쓰기</button>
+	<div id="search">
 	
+	<form action="search" method="get">
+	<select name="searchtype">
+		<option value="b_title">제목</option>
+		<option value="b_writer">작성자</option>
+	</select>
+	<input type="text" name="keyword">
+	<input type="submit" value="검색">
+</form>
+	</div>
 	</div>
 <div align="center">
 		<c:choose>
@@ -61,7 +71,7 @@
 				[이전]&nbsp;
 			</c:when>
 			<c:otherwise>
-			<!-- 현재 페이지에서 1감소한 페이지 요청하는 링크 -->
+			
 				<a href="paging?page=${paging.page-1}">[이전]</a>&nbsp;
 			</c:otherwise>
 		</c:choose>

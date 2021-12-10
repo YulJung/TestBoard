@@ -22,7 +22,7 @@
 	crossorigin="anonymous"></script>
 </head>
 <body>
-	<form method="post" align="center" action="save" enctype="multpart/form-data">
+	<form method="post" align="center" action="save" enctype="multipart/form-data">
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">ID</label> <input type="text"
 				class="form-control" name="b_writer" value="${m }"
@@ -40,7 +40,7 @@
 		</div>
 		<div class="form-group" align="center">
 			<label for="exampleFormControlInput1">첨부파일</label> <input
-				type="file" class="form-control" name="b_file"
+				type="file" class="form-control" name="b_files"
 				placeholder="첨부파일을 선택해주세요" style="width: 300px; height: 50px;">
 		</div>
 			
