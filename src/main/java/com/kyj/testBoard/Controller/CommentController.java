@@ -18,22 +18,22 @@ public class CommentController {
 
 	@Autowired
 	private CommentService cs;
-	
-	@RequestMapping(value="commentSave", method=RequestMethod.POST)
+
+	@RequestMapping(value = "commentSave", method = RequestMethod.POST)
 	public @ResponseBody List<CommentDTO> save(@ModelAttribute CommentDTO comment) {
-	
+
 		cs.save(comment);
-		// 댓글을 저장하는 메서드를 호출
+
 		List<CommentDTO> commentList = cs.findAll(comment.getB_number());
-		
+
 		return commentList;
 	}
-	@RequestMapping(value = "commentload",method=RequestMethod.POST)
+
+	@RequestMapping(value = "commentload", method = RequestMethod.POST)
 	public @ResponseBody List<CommentDTO> load(@ModelAttribute CommentDTO comment) {
-		
-		// 댓글을 저장하는 메서드를 호출
+
 		List<CommentDTO> commentList = cs.findAll(comment.getB_number());
-		
+
 		return commentList;
 	}
 }

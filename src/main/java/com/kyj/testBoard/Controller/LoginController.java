@@ -15,41 +15,45 @@ import com.kyj.testBoard.DTO.MemberDTO;
 import com.kyj.testBoard.Service.MemberServiceInterface;
 
 @Controller
-@RequestMapping(value="/testBoard/*")
+@RequestMapping(value = "/testBoard/*")
 public class LoginController {
-	
+
 	@Autowired
 	private MemberServiceInterface ms;
+
 	@RequestMapping(value = "login")
-	public String loginView(HttpSession session ) {
-		System.out.println(session.getAttribute("loginId"));
+	public String loginView(HttpSession session) {
+
 		try {
 			session.getAttribute("loginId");
 		} catch (NullPointerException e) {
 			// TODO: handle exception
 			return "redirect:findall";
 		}
-			
+
 		return "/member/login";
 	}
+
 	@RequestMapping(value = "doLogin")
-	public String doLogin(@ModelAttribute MemberDTO member,Model model,HttpServletRequest request) {
-	
-		return ms.login(member,model,request, 1);
+	public String doLogin(@ModelAttribute MemberDTO member, Model model, HttpServletRequest request) {
+
+		return ms.login(member, model, request, 1);
 	}
+
 	@RequestMapping(value = "logout")
-	public String doLogout(HttpSession session,Model model) {
-	 session.invalidate();
-		 
-		 model.addAttribute("msg","정상적으로 로그아웃 되셨습니다.");
-	            model.addAttribute("url","/");
-		
+	public String doLogout(HttpSession session, Model model) {
+		session.invalidate();
+
+		model.addAttribute("msg", "정상적으로 로그아웃 되셨습니다.");
+		model.addAttribute("url", "/");
+
 		return "/member/redirect";
 	}
+
 	@RequestMapping(value = "admin")
 	public String adminPage(Model model) {
 		List list = ms.getall();
-		model.addAttribute("member",list );
+		model.addAttribute("member", list);
 		return "/member/memberList";
 	}
 }

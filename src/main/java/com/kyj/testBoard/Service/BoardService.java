@@ -18,35 +18,31 @@ import com.kyj.testBoard.Repository.BoardRepository;
 public class BoardService implements BoardServiceInterface {
 	@Autowired
 	private BoardRepository br;
-	
+
 	private static final int PAGE_LIMIT = 5; // 한페이지에 보여질 글 개수
 	private static final int BLOCK_LIMIT = 3; // 한화면에 보여질 페이지 개수
 	// 데이터베이스에서 limit 문에 쓸 값을 변수로 선언
-	
-	
+
 	@Override
 	public void save(BoardDTO board) throws IllegalStateException, IOException {
-		
+
 		MultipartFile b_file = board.getB_files();
-		
+
 		String b_filename = b_file.getOriginalFilename();
-		
+
 		b_filename = System.currentTimeMillis() + "-" + b_filename;
-		System.out.println("b_file: " + b_filename);
-	
-		String savePath = "D:\\eclipse\\Spring\\Worksapce\\TestBoard\\src\\main\\webapp\\resources\\upload\\"+b_filename;
-		
-		if(!b_file.isEmpty()) {
+		String savePath = "D:\\eclipse\\Spring\\Worksapce\\TestBoard\\src\\main\\webapp\\resources\\upload\\"
+				+ b_filename;
+
+		if (!b_file.isEmpty()) {
 			b_file.transferTo(new File(savePath));
-			
+
 		}
-	
+
 		board.setB_file(b_filename);
-	
-		
-		
+
 		br.insert(board);
-		
+
 	}
 
 	@Override
@@ -82,30 +78,29 @@ public class BoardService implements BoardServiceInterface {
 	@Override
 	public PageDTO paging(int page) {
 		int boardCount = br.boardCount();
-		int maxPage = (int)(Math.ceil((double)boardCount / PAGE_LIMIT));
-		int startPage = (((int)(Math.ceil((double)page / BLOCK_LIMIT)))-1) * BLOCK_LIMIT + 1;
+		int maxPage = (int) (Math.ceil((double) boardCount / PAGE_LIMIT));
+		int startPage = (((int) (Math.ceil((double) page / BLOCK_LIMIT))) - 1) * BLOCK_LIMIT + 1;
 		int endPage = startPage + BLOCK_LIMIT - 1;
-		if(endPage > maxPage)
-			endPage = maxPage; 
+		if (endPage > maxPage)
+			endPage = maxPage;
 		PageDTO paging = new PageDTO();
 		paging.setPage(page);
 		paging.setStartPage(startPage);
 		paging.setEndPage(endPage);
 		paging.setMaxPage(maxPage);
-		
-		
+
 		return paging;
 	}
 
 	@Override
 	public List<BoardDTO> pagingList(int page) {
-		int pagingStart = (page-1) * PAGE_LIMIT;
+		int pagingStart = (page - 1) * PAGE_LIMIT;
 		Map<String, Integer> pagingParam = new HashMap<String, Integer>();
 		pagingParam.put("start", pagingStart);
 		pagingParam.put("limit", PAGE_LIMIT);
 //		List<BoardDTO> pagingList = br.pagingList(pagingStart);
 		List<BoardDTO> pagingList = br.pagingList1(pagingParam);
-		
+
 		return pagingList;
 	}
 
@@ -118,7 +113,5 @@ public class BoardService implements BoardServiceInterface {
 		List<BoardDTO> bList = br.search(searchParam);
 		return bList;
 	}
-	
-	
 
 }
